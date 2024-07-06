@@ -1,55 +1,25 @@
-﻿#include "myscene.h"
+﻿#include "inc/myscene.h"
 
-
+/*
+ * 构造函数，只支持显式构建
+*/
 MyScene::MyScene(QObject *parent) :
     QGraphicsScene(parent)
 {
     initScene();
-
-
-    /*
-     * 测试每个图形是否可以旋转，每个转是否正常
-     * 没有去检测是否符合碰撞，但是如果不符合碰撞理论可以使用scene去处理
-     *
-    this->addLine(0,0 ,0,100);
-    this->addLine(100,100 ,300,100);
-    this->addLine(100,100,100,200);
-    this->addLine(200,100,200,200);
-    int type = 6;
-    MyGroup * group = new MyGroup(0,0,type);
-    this->addItem(group);
-
-    MyGroup * group2 = new MyGroup(100,100,type);
-    this->addItem(group2);
-    //group2->moveBy(0,40);
-    group2->zhuangLeft();
-    //this->addItem(group2);
-
-    MyGroup * group3 = new MyGroup(200,200,type);
-    this->addItem(group3);
-    group3->zhuangLeft();
-    group3->zhuangLeft();
-
-    MyGroup * group4 = new MyGroup(300,300,type);
-    this->addItem(group4);
-    group4->zhuangLeft();
-    group4->zhuangLeft();
-    group4->zhuangLeft();
-    */
-
 }
 
-//初始化
+/**
+ * 初始化场景
+ * 初始化3个边界线段
+ * 初始化curGroup
+ * 初始化nextGroup
+ * 根据定时器信号出发移动函数
+ * 初始化界面中的
+*/
 void MyScene::initScene()
 {
     //nextgroup的显示
-    /*
-    this->addLine(420,30,420,110);
-    this->addLine(420,30,500,30);
-    this->addLine(500,30,500,110);
-    this->addLine(500,110,420,110);
-    */
-
     lineItem1 = new QGraphicsLineItem;
     lineItem1->setLine(198,-10,198,400);
     this->addItem(lineItem1);
@@ -90,7 +60,14 @@ void MyScene::initScene()
 }
 
 
-//碰撞检测
+/**
+ * 碰撞检测
+ * 1. 判断和边界线是否有碰撞
+ * 2. 判断和界面状态数组之间是否有碰撞
+ *
+ * @brief MyScene::IsColliding
+ * @return
+ */
 int MyScene::IsColliding()
 {
     QList<QGraphicsItem * > list = this->collidingItems(lineItem1);
@@ -113,18 +90,6 @@ int MyScene::IsColliding()
         //this->group->moveUp();
         return 1;
     }
-
-    /*
-    list = curGroup->collidingItems();
-
-    if(list.size() > 4)
-    {
-       qDebug() << "box 1 "<<endl;
-        //this->group->moveUp();
-        return 1;
-    }
-    */
-
     if(this->curGroup->isColliding())
     {
         return 1;
@@ -132,7 +97,11 @@ int MyScene::IsColliding()
     return 0;
 }
 
-//键盘事件
+/**
+ * 接受键盘输入，AD左右移动，S为快速下降，Q为向左旋转，E为向右选装
+ * @brief MyScene::keyPressEvent
+ * @param keyEvent
+ */
 void MyScene::keyPressEvent(QKeyEvent *keyEvent)
 {
     if(!timer->isActive())
@@ -177,8 +146,6 @@ void MyScene::keyPressEvent(QKeyEvent *keyEvent)
     if(keyEvent->key() == Qt::Key_Space)
     {
         this->testEnd ++ ;
-       //qDebug() << this->curGroup->pos_x << this->curGroup->pos_y ;
-       //curGroup->moveBy(0,400-this->curGroup->pos_y - 80);
         while(!this->IsColliding())
         {
             curGroup->moveBy(0,20);
@@ -224,6 +191,11 @@ void MyScene::creatNewGroup()
     testEnd = 0;
 }
 
+
+/** 当数据元素组停止落地后，对4个元素所在的行进行检测。
+ *  当行内所有位置都已经包含元素后，则清除一行数据。
+ * @brief MyScene::setRet
+ */
 void MyScene::setRet()
 {
     //此处为了解决下面移动问题采用一种笨方法
@@ -252,6 +224,12 @@ void MyScene::setRet()
 
 }
 
+/**
+ *  判断某行是否已经全部放满
+ * @brief MyScene::testRet
+ * @param row
+ * @return
+ */
 int MyScene::testRet(int row)
 {
     for(int i = 0 ; i < 10 ; i++)
@@ -262,18 +240,20 @@ int MyScene::testRet(int row)
     return 1;
 }
 
+/**
+ * （成功消除了一行数据后）将消除的哪一行的元素全部删除，并将所有的元素向下移动一格。
+ * @brief MyScene::destroyFromRet
+ * @param row
+ * @return
+ */
 int MyScene::destroyFromRet(int row)
 {
     int pos_x = 210;
     int pos_y = row * 20 + 10;
 
-
     //删除一行的元素
     for(int i = 0 ; i < 10 ; i++)
     {
-       // QTransform tra ;
-       // QGraphicsItem * item = this->itemAt(pos_x,pos_y,tra);
-       // QList<QGraphicsItem * > list = this->itemAt(QPointF(pos_x,pos_y),tra);
         this->removeItem(type_ret[row][i]);
         type_ret[row][i] = NULL ;
     }
@@ -282,9 +262,14 @@ int MyScene::destroyFromRet(int row)
 }
 
 
-
-//容易出现问题的地方，1.如果只是改变图元的位置，并没有改变图源的坐标，
-//                2.一个组的元素还没有全部添加到数组中，则移动操作不会该表他们。
+/**
+ * （成功消除了一行数据后）将所有的元素向下移动一格，
+ * 容易出现问题的地方，1.如果只是改变图元的位置，并没有改变图源的坐标，
+ *                  2.一个组的元素还没有全部添加到数组中，则移动操作不会该表他们。
+ * @brief MyScene::moveDownRet
+ * @param row
+ * @return
+ */
 int MyScene::moveDownRet(int row)
 {
     for(int i = row - 1 ;i >-1 ; i --)
@@ -302,16 +287,26 @@ int MyScene::moveDownRet(int row)
     return 0;
 }
 
+/** 开始游戏，启动定时器，触发间隔为0.5s
+ * @brief MyScene::strat
+ */
 void MyScene::strat()
 {
     timer->start(500);
 }
 
+/** 暂停游戏，关闭定时器
+ * @brief MyScene::stop
+ */
 void MyScene::stop()
 {
     timer->stop();
 }
 
+/** 开始新的游戏，删除curGroup，nextGroup。清空界面状态数组
+ *  初始化新的curGroup，nextGroup
+ * @brief MyScene::starNewGame
+ */
 void MyScene::starNewGame()
 {
     timer->stop();
@@ -339,7 +334,6 @@ void MyScene::starNewGame()
 
     }
 
-
     qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
     int type = qrand();
     type = type % 7;
@@ -354,7 +348,11 @@ void MyScene::starNewGame()
 }
 
 
-//下落的函数
+/** 槽函数，由定时器触发
+ *  向下移动curgroup，同时判断是否结束游戏
+ * @brief MyScene::moveDownTest
+ * @return
+ */
 int MyScene::moveDownTest()
 {
     if(curGroup == NULL)

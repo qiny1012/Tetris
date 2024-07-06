@@ -1,4 +1,4 @@
-﻿#include "myitem.h"
+﻿#include "inc/myitem.h"
 
 MyItem::MyItem()
 {

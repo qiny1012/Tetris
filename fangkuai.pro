@@ -12,15 +12,17 @@ TARGET = fangkuai
 TEMPLATE = app
 
 
-SOURCES += main.cpp\
-        mainwindow.cpp \
-    myitem.cpp \
-    mygroup.cpp \
-    myscene.cpp
+SOURCES += \
+    src/main.cpp \
+    src/mainwindow.cpp \
+    src/mygroup.cpp \
+    src/myitem.cpp \
+    src/myscene.cpp
 
-HEADERS  += mainwindow.h \
-    myitem.h \
-    mygroup.h \
-    myscene.h
+HEADERS  += \
+    inc/mainwindow.h \
+    inc/mygroup.h \
+    inc/myitem.h \
+    inc/myscene.h
 
 FORMS    += mainwindow.ui
